@@ -1,0 +1,73 @@
+<Shaders  fragmentProcessor  = "PIXEL_SHADER"
+          vertexProcessor    = "VERTEX_SHADER"
+          linkProcessors     = "true">
+
+  <VERTEX_SHADER>
+    <Uniform name = "transformMatrix" type = "float" size = "16" />
+    <Uniform name = "elapsedTime"     type = "float" size = "1" />
+    <RawData>
+	  uniform   mat4  transformMatrix;
+      uniform   float elapsedTime;
+
+	  attribute vec3  position;
+	  attribute vec3  normal;
+	  attribute vec3  uvJitter;
+	  attribute vec3  binormal;
+	  attribute vec3  tangent;
+	  attribute vec3  offset;
+
+	  varying   vec2  texCoordOut0;
+ 
+      void main(void)
+      {
+		vec4 oldPosition = vec4(position, 1.0);
+
+        mat4 newMatrix = mat4(vec4(tangent, 0.0),
+                              vec4(normal, 0.0),
+                              vec4(binormal, 0.0),
+                              vec4(0.0, 0.0, 0.0, 1.0));
+
+        if(uvJitter.y > 0.2)
+        {
+          float cosine     = cos(elapsedTime) * uvJitter.z * 10.0;
+          oldPosition.x   += cosine;
+          oldPosition.z   += cosine;
+        }  
+
+        vec4 finalPosition      = newMatrix  * oldPosition;
+        finalPosition.xyz      += offset.xyz;
+
+        texCoordOut0   = uvJitter.xy;
+        gl_Position    = transformMatrix * finalPosition;
+      }
+    </RawData>
+  </VERTEX_SHADER>
+
+  <PIXEL_SHADER>
+    <Uniform name = "grass"          type = "int"   size = "1" />
+    <Uniform name = "alphaReference" type = "float" size = "1" />
+    <Uniform name = "alphaBooster"   type = "float" size = "1" />
+    <RawData>
+      precision highp float;
+
+	  uniform sampler2D grass;
+	  uniform float     alphaReference;
+      uniform float     alphaBooster;
+
+	  varying vec2      texCoordOut0;
+
+      void main(void)
+      {
+        vec4  grassSample = texture2D(grass, texCoordOut0);
+        float newAlpha    = grassSample.a * alphaBooster;
+		// ??
+		if(alphaReference >= newAlpha/*grassSample.a*/)
+		{
+		  discard;
+		}
+	    gl_FragColor      = vec4(grassSample.xyz, newAlpha);
+      }
+    </RawData>
+  </PIXEL_SHADER>
+  
+</Shaders>

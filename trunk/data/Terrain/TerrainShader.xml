@@ -1,0 +1,62 @@
+<Shaders  fragmentProcessor = "PIXEL_SHADER"
+          vertexProcessor   = "VERTEX_SHADER"
+          linkProcessors    = "true">
+
+  <VERTEX_SHADER>
+    <Uniform name = "transformMatrix" type = "float" size = "16" />
+    <RawData> 
+      uniform   mat4 transformMatrix;
+
+	  attribute vec3 position;
+	  attribute vec3 normal;
+	  attribute vec2 texCoord0;
+
+	  varying   vec3 normalOut;
+	  varying   vec2 texCoordOut0;
+
+	  void main(void)
+      {
+		normalOut = normal;
+		texCoordOut0 = texCoord0;
+		gl_Position = transformMatrix * vec4(position, 1.0);
+      }
+    </RawData>
+  </VERTEX_SHADER>
+
+  <PIXEL_SHADER>
+    <Uniform name = "weight" type = "int" size = "1" />
+    <Uniform name = "fungus" type = "int" size = "1" />
+    <Uniform name = "dirt"   type = "int" size = "1" />
+    <Uniform name = "grass"  type = "int" size = "1" />
+   <RawData>  
+      precision highp float;
+
+	  uniform   sampler2D weight;
+      uniform   sampler2D fungus;
+      uniform   sampler2D dirt;
+      uniform   sampler2D grass;
+
+	  varying   vec2      texCoordOut0;
+	  varying   vec3      normalOut;
+    
+      void main(void)
+      {
+		vec4  weightSample = texture2D(weight, texCoordOut0);
+		vec4  fungusSample = texture2D(fungus, texCoordOut0 * 25.0);
+		vec4  grassSample  = texture2D(grass , texCoordOut0 * 20.0);
+		vec4  dirtSample   = texture2D(dirt  , texCoordOut0 * 20.0);
+
+		float weightScale1  = clamp(weightSample.y * 1.25, 0.0, 1.0);
+		float weightScale2  = clamp(weightSample.x, 0.0, 1.0);
+
+		vec3  normal       = normalize(normalOut);
+		float dp           = clamp(dot(vec3(0.73, 0.73, 0.0), normal), 0.0, 1.0);
+
+		vec4  dirtAndGrass = dirtSample   * weightScale1 + (1.0 - weightScale1) * grassSample;
+		vec4  color        = weightScale2 * dirtAndGrass + (1.0 - weightScale2) * fungusSample;
+		gl_FragColor       = color * dp;
+      }
+    </RawData>
+  </PIXEL_SHADER>
+  
+</Shaders>
