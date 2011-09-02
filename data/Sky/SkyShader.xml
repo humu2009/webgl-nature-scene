@@ -1,0 +1,74 @@
+<Shaders  fragmentProcessor = "PIXEL_SHADER"
+          vertexProcessor   = "VERTEX_SHADER"
+
+          linkProcessors    = "true">
+
+  <VERTEX_SHADER>
+    <Uniform name = "transformMatrix" type = "float" size = "16" />
+    <Uniform name = "params"          type = "float" size = "4" />
+    <Uniform name = "offset"          type = "float" size = "3" />
+    <RawData>
+      uniform   mat4  transformMatrix;
+	  uniform   vec4  params;
+      uniform   vec3  offset;
+
+	  attribute vec3  position;
+
+      varying   float intensity;
+      varying   float intensitySqrd;
+	  varying   vec4  texCoord0;
+  
+      void main(void)
+      {
+        
+        vec2 newUV  = vec2((position.x - offset.x)/params.x,
+                           (position.z - offset.z)/params.z);
+      
+        texCoord0.x   = newUV.x + params.w*0.66;
+        texCoord0.y   = newUV.y + params.w*0.33;
+        texCoord0.xy *= 2.0;
+
+        texCoord0.z   = newUV.x + params.w*1.33;
+        texCoord0.w   = newUV.y + params.w*1.66;
+        texCoord0.zw *= 3.0;
+ 
+        // get the vertex height and scale it to 0 - 1 range
+        intensity        = position.y/params.y;
+        intensity        = exp(clamp(intensity, 0.0, 1.0))/2.2;
+        intensitySqrd    = intensity*intensity;
+   
+        gl_Position      = transformMatrix * vec4(position, 1.0);
+      }
+    </RawData>
+  </VERTEX_SHADER>
+
+  <PIXEL_SHADER>
+    <Uniform name = "noise"    type =   "int" size = "1" />
+    <Uniform name = "skyInfo"  type = "float" size = "4" />
+    <RawData>
+      precision highp float;
+
+	  uniform sampler2D noise;
+      uniform vec4      skyInfo;
+
+      varying float     intensity;
+      varying float     intensitySqrd;
+	  varying vec4      texCoord0;
+    
+      void main(void)
+      {
+        vec4 noise1     = texture2D(noise, texCoord0.xy),
+             noise2     = texture2D(noise, texCoord0.zw);
+
+	    vec3 cloudFrag  = (noise1 + noise2).xyz * intensitySqrd;
+	    vec3 cloudColor = vec3((1.0 - intensity)*skyInfo.x,
+	                           (1.0 - intensity)*skyInfo.y,
+	                           intensity*skyInfo.z);
+
+	    gl_FragColor    = vec4(cloudColor * (1.0 - cloudFrag.x) + cloudFrag, 1.0);
+
+      }
+    </RawData>
+  </PIXEL_SHADER>
+  
+</Shaders>

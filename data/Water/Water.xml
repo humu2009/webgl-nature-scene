@@ -1,0 +1,28 @@
+<Shape>
+  <Appearance>
+
+    <Texture  type        = "TEXTURE_2D"
+              path        = "water.png"
+              mipmap      = "true" > 
+      <Wrap   s           = "REPEAT" 
+              t           = "REPEAT" />
+          
+      <Filter mag         = "LINEAR" 
+              min         = "LINEAR_MIPMAP_LINEAR"/> 
+    </Texture>
+  </Appearance>
+  
+<Geometry type         = "TRIANGLES"
+          indicesCount = "6">
+  <TexCoords id   = "0"
+             size = "2">
+    <RawData length = "8">0.000000 0.999999 4.000000 1.000000 0.000000 -3.000000 4.000000 -3.000000</RawData>
+  </TexCoords>
+  <Vertices>
+    <RawData length = "12">-1257.257202 0.124995 638.826721 -1257.257935 0.124994 -638.576782 1257.007202 0.124995 638.826660 1257.007446 0.125005 -638.576538</RawData>
+  </Vertices>
+  <Indices>
+    <RawData length = "6">2 1 0 2 3 1</RawData>
+  </Indices>
+</Geometry>
+</Shape>

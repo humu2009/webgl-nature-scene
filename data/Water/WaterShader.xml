@@ -1,0 +1,86 @@
+<Shaders  fragmentProcessor = "PIXEL_SHADER"
+          vertexProcessor   = "VERTEX_SHADER"
+          linkProcessors    = "true">
+
+  <VERTEX_SHADER>
+    <Uniform name = "transformMatrix" type = "float" size = "16" />
+    <Uniform name = "translation"     type = "float" size = "3" />
+    <Uniform name = "camera"          type = "float" size = "3" />
+    <Uniform name = "elapsedTime"     type = "float" size = "1" />
+    <Uniform name = "waterMatrix"     type = "float" size = "16" />
+
+    <RawData>
+      uniform   mat4  transformMatrix;
+	  uniform   vec3  translation;
+      uniform   vec3  camera;
+      uniform   float elapsedTime;
+	  uniform   mat4  waterMatrix;
+
+	  attribute vec3  position;
+	  attribute vec2  texCoord0;
+
+	  varying   vec4  texCoordOut0;
+	  varying   vec2  texCoordOut1;
+	  varying   vec3  texCoordOut2;
+	  varying   vec3  texCoordOut3;
+     
+      void main(void)
+      {
+        vec3 regularPosition    = position;
+             regularPosition.y += cos(elapsedTime*0.75);
+        
+        vec3 correctPosition    = regularPosition + translation;
+        
+        texCoordOut0       = waterMatrix * vec4(correctPosition, 1.0);
+        texCoordOut1       = texCoord0*2.0;
+        texCoordOut2       = camera - correctPosition;
+        texCoordOut3       = correctPosition;
+        gl_Position        = transformMatrix*vec4(regularPosition, 1.0);
+      }
+    </RawData>
+  </VERTEX_SHADER>
+
+
+  <PIXEL_SHADER>
+    <Uniform name = "reflection"  type = "int"   size = "1" />
+    <Uniform name = "normalmap"   type = "int"   size = "1" />
+    <Uniform name = "elapsedTime" type = "float" size = "1" />
+    <Uniform name = "terrainInfo" type = "float" size = "4" />
+    
+    <RawData>
+      precision highp float;
+	  
+	  uniform sampler2D  reflection;
+      uniform sampler2D  normalmap;
+
+      uniform float      elapsedTime;
+      uniform vec4       terrainInfo;
+
+	  varying   vec4  texCoordOut0;
+	  varying   vec2  texCoordOut1;
+	  varying   vec3  texCoordOut2;
+	  varying   vec3  texCoordOut3;
+   
+      void main(void)
+      {
+        vec2  displacement    = texCoordOut1;
+        vec3  viewVector      = normalize(texCoordOut2);
+        vec2  projectedCoords = texCoordOut0.xy/texCoordOut0.w;
+        vec2  uvDepthCoords   = vec2((texCoordOut3.x - terrainInfo.x)/terrainInfo.z,
+                                     (texCoordOut3.z - terrainInfo.y)/terrainInfo.w);
+             
+        float scaledTimer     = elapsedTime*0.05;
+        
+        displacement.x       += scaledTimer;
+        displacement.y       -= scaledTimer;
+        
+        vec3  normal   = normalize(texture2D(normalmap, displacement).xyz*2.0 - 1.0)*0.025;
+        vec3  color    = texture2D(reflection, projectedCoords + normal.xy).xyz;
+        
+        float alpha    = clamp(dot(vec3(0.0, 1.0, 0.0), viewVector), 0.0, 1.0);
+		gl_FragColor   = vec4(color, 1.1 - alpha*alpha);
+      }
+    </RawData>
+  </PIXEL_SHADER>
+  
+</Shaders>
