@@ -1,4 +1,5 @@
 #summary Gallery.
+#labels Featured
 
 ||[http://webgl-nature-scene.googlecode.com/svn/screenshots/small01.jpg]||
 ||[http://webgl-nature-scene.googlecode.com/svn/screenshots/small02.jpg]||
