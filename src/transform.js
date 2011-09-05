@@ -25,7 +25,10 @@
 Transform = function() {
 	this.translation = [0, 0, 0];
 	this.rotation = [0, 0, 0];
-	this.scale = [1, 1, 1]
+	this.scale = [1, 1, 1];
+
+	this.matrix = sglIdentityM4();
+	this.isDirty = false;
 };
 
 Transform.prototype.getTranslation = function() {
@@ -33,9 +36,8 @@ Transform.prototype.getTranslation = function() {
 };
 
 Transform.prototype.setTranslation = function(translation) {
-	this.translation[0] = translation[0];
-	this.translation[1] = translation[1];
-	this.translation[2] = translation[2];
+	copyV3(this.translation, translation);
+	this.isDirty = true;
 };
 
 Transform.prototype.getRotation = function() {
@@ -43,9 +45,8 @@ Transform.prototype.getRotation = function() {
 };
 
 Transform.prototype.setRotation = function(rotation) {
-	this.rotation[0] = rotation[0];
-	this.rotation[1] = rotation[1];
-	this.rotation[2] = rotation[2];
+	copyV3(this.rotation, rotation);
+	this.isDirty = true;
 };
 
 Transform.prototype.getScale = function() {
@@ -53,17 +54,21 @@ Transform.prototype.getScale = function() {
 };
 
 Transform.prototype.setScale = function(scale) {
-	this.scale[0] = scale[0];
-	this.scale[1] = scale[1];
-	this.scale[2] = scale[2];
+	copyV3(this.scale, scale);
+	this.isDirty = true;
 };
 
 Transform.prototype.getMatrix = function() {
-	var sMat  = sglScalingM4V(this.scale);
-	var rxMat = sglRotationAngleAxisM4C(this.rotation[0], 1, 0, 0);
-	var ryMat = sglRotationAngleAxisM4C(this.rotation[1], 0, 1, 0);
-	var rzMat = sglRotationAngleAxisM4C(this.rotation[2], 0, 0, 1);
-	var tMat  = sglTranslationM4V(this.translation);
+	if(this.isDirty) {
+		var sMat  = sglScalingM4V(this.scale);
+		var rxMat = sglRotationAngleAxisM4C(this.rotation[0], 1, 0, 0);
+		var ryMat = sglRotationAngleAxisM4C(this.rotation[1], 0, 1, 0);
+		var rzMat = sglRotationAngleAxisM4C(this.rotation[2], 0, 0, 1);
+		var tMat  = sglTranslationM4V(this.translation);
 
-	return sglMulM4(tMat, sglMulM4(rzMat, sglMulM4(ryMat, sglMulM4(rxMat, sMat))));
+		this.matrix = sglMulM4(tMat, sglMulM4(rzMat, sglMulM4(ryMat, sglMulM4(rxMat, sMat))));
+		this.isDirty = false;
+	}
+
+	return this.matrix;
 };
