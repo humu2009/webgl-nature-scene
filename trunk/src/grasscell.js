@@ -73,6 +73,8 @@ GrassCell.prototype.setup = function(heightmap, offset, random, coverage) {
 	var vertexOffset = [0, 0, 0];
 	var texCoord = [0, 0, 0, 0];
 
+	var yRotation60 = sglRotationAngleAxisM4V(sglDegToRad(60), [0, 1, 0]);
+
 	var indexOffset = 0;
 	var ii = 0;
 	var vi = 0;
@@ -161,12 +163,10 @@ GrassCell.prototype.setup = function(heightmap, offset, random, coverage) {
 				uvJitters[ti++] = texCoord[3];
 				uvJitters[ti++] = jitter;
 
-				randYRotation = sglRotationAngleAxisM4V(sglDegToRad(60), [0, 1, 0]);
-
 				for(var i=4; i<12; i++) {
 					var k = vi - 12;
 					assignV3(vertex, vertices[k], vertices[k + 1], vertices[k + 2]);
-					vertex = sglMulM4V3(randYRotation, vertex, 1);
+					vertex = sglMulM4V3(yRotation60, vertex, 1);
 					vertices[vi++] = vertex[0];
 					vertices[vi++] = vertex[1];
 					vertices[vi++] = vertex[2];
