@@ -234,7 +234,7 @@ GrassCell.prototype.setup = function(heightmap, offset, random, coverage) {
 	this.mesh.addVertexAttribute('uvJitter', 3, uvJitters);
 	this.mesh.addVertexAttribute('offset', 3, offsets);
 	this.mesh.addIndexedPrimitives('triangles', this.gl.TRIANGLES, indices);
-	this.triangleCount = vertices.length / 3;
+	this.triangleCount = indices.length / 3;
 
 	this.verticalBounds = [minHeight, maxHeight];
 };
