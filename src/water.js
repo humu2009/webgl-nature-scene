@@ -319,7 +319,7 @@ Water.prototype.loadShape = function(filename) {
 					meshJS.addIndexedPrimitives('triangles', SGL_TRIANGLES_LIST, indices);
 					self.mesh = meshJS.toMeshGL(self.gl);
 					self.aabb = meshJS.calculateBoundingBox('position').transformed(self.transform.getMatrix());
-					self.triangleCount = vertices.length / 3;
+					self.triangleCount = indices.length / 3;
 				}
 				info('loaded: ' + url);
 			}

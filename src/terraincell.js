@@ -88,7 +88,7 @@ TerrainCell.prototype.setup = function(heightmap, start) {
 	this.mesh.addVertexAttribute('normal', 3, normals);
 	this.mesh.addVertexAttribute('texCoord0', 2, uvs);
 	this.mesh.addIndexedPrimitives('triangles', this.gl.TRIANGLES, TerrainCell.indices);
-	this.triangleCount = vertices.length / 3;
+	this.triangleCount = TerrainCell.indices.length / 3;
 	
 	this.verticalBounds = [minHeight, maxHeight];
 };
