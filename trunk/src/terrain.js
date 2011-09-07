@@ -309,6 +309,9 @@ Terrain.prototype.generateWeightTexture = function(destmap, srcmap) {
 };
 
 Terrain.prototype.adjustCamera = function(camera, radius) {
+	if(!this.isReady())
+		return;
+
 	var pos = camera._position;
 	var height = this.terrainInfo.getHeight(pos);
 	var off = pos[1] - radius - height;
