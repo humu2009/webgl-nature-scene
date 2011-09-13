@@ -341,15 +341,13 @@ Water.prototype.beginReflectionRT = function(camera) {
 	var w = this.scene.getApp().getWidth();
 	var h = this.scene.getApp().getHeight();
 
-	this.gl.viewport(0, 0, this.surfaceFB.width, this.surfaceFB.height);
-
 	var xform = this.scene.getApp().getTransformStack();
 
 	xform.projection.push();
 	xform.projection.loadIdentity();
 	xform.projection.perspective(sglDegToRad(90), w / h, 10, 4000);
 
-	var projection = sglPerspectiveM4(sglDegToRad(90), w / h, 4, 7500);
+	var projectionMatrix = sglPerspectiveM4(sglDegToRad(90), w / h, 4, 7500);
 
 	var viewMatrixInverseTranspose = sglTransposeM4(sglInverseM4(camera.matrix));
 	var clipPlane = sglMulM4V4(viewMatrixInverseTranspose, [0, -1, 0, 0]);
@@ -357,9 +355,9 @@ Water.prototype.beginReflectionRT = function(camera) {
 
 	copyV3(this.cameraPosition, camera._position);
 
-	var transformMatrix = this.transform.getMatrix();
+	var modelMatrix = this.transform.getMatrix();
 
-	assignV3(this.translation, transformMatrix[12], transformMatrix[13], transformMatrix[14]);
+	assignV3(this.translation, modelMatrix[12], modelMatrix[13], modelMatrix[14]);
 
 	this.waterMatrix = [
 		0.5, 0,   0,   0, 
@@ -367,7 +365,7 @@ Water.prototype.beginReflectionRT = function(camera) {
 		0,   0,   0.5, 0, 
 		0.5, 0.5, 0.5, 1
 	];
-	this.waterMatrix = sglMulM4(this.waterMatrix, sglMulM4(projection, camera.matrix));
+	this.waterMatrix = sglMulM4(this.waterMatrix, sglMulM4(projectionMatrix, camera.matrix));
 
 	assignV4(	this.terrainInfo, 
 				-TerrainConsts.TERRAIN_X_OFFSET * TerrainConsts.TERRAIN_WIDTH_SCALE, 
@@ -377,13 +375,14 @@ Water.prototype.beginReflectionRT = function(camera) {
 
 	this.surfaceFB.bind();
 
+	this.scene.setMirrored(true);
+
+	this.gl.viewport(0, 0, this.surfaceFB.width, this.surfaceFB.height);
 	this.gl.clearColor(0, 0, 0, 1);
 	this.gl.clear(this.gl.COLOR_BUFFER_BIT | this.gl.DEPTH_BUFFER_BIT);
 
-	this.scene.setMirrored(true);
-
 	xform.view.push();
-	xform.view.translate(0, transformMatrix[13], 0);
+	xform.view.translate(0, modelMatrix[13], 0);
 	xform.view.scale(1, -1, 1);
 };
 

@@ -508,7 +508,7 @@ Terrain.prototype.buildPortals = function() {
 		}
 	}
 
-	// debug code
+	// debugging code
 	var blockCount = 0;
 	for(var i=0; i<this.portals.length; i++) {
 		blockCount += this.portals[i].getGrassCell().getBlockCount();
