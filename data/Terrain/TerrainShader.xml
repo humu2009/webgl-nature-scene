@@ -17,7 +17,7 @@
 	  void main(void)
       {
 		normalOut = normal;
-		texCoordOut0 = texCoord0;
+		texCoordOut0 = vec2(texCoord0.x, 1.0 - texCoord0.y);
 		gl_Position = transformMatrix * vec4(position, 1.0);
       }
     </RawData>
@@ -52,7 +52,7 @@
 		vec3  normal       = normalize(normalOut);
 		float dp           = clamp(dot(vec3(0.73, 0.73, 0.0), normal), 0.0, 1.0);
 
-		vec4  dirtAndGrass = dirtSample   * weightScale1 + (1.0 - weightScale1) * grassSample;
+		vec4  dirtAndGrass = weightScale1 * dirtSample + (1.0 - weightScale1) * grassSample;
 		vec4  color        = weightScale2 * dirtAndGrass + (1.0 - weightScale2) * fungusSample;
 		gl_FragColor       = color * dp;
       }
