@@ -77,6 +77,8 @@ Terrain = function(scene, gl) {
 	this.isTextureLoaded = false;
 	this.terrainInfo = new HeightMap;
 	this.portals = null;
+	this.xBounds = [0, 0];
+	this.zBounds = [0, 0];
 	this.isBBoxesOn = false;
 	this.elapsedTime = 0;
 };
@@ -313,6 +315,18 @@ Terrain.prototype.adjustCamera = function(camera, radius) {
 		return;
 
 	var pos = camera._position;
+
+	// keep the camera off the borders of the terrain
+	if(pos[0] < this.xBounds[0])
+		pos[0] = this.xBounds[0];
+	else if(pos[0] > this.xBounds[1])
+		pos[0] = this.xBounds[1];
+	if(pos[2] < this.zBounds[0])
+		pos[2] = this.zBounds[0];
+	else if(pos[2] > this.zBounds[1])
+		pos[2] = this.zBounds[1];
+
+	// force the camera to follow the terrain
 	var height = this.terrainInfo.getHeight(pos);
 	var off = pos[1] - radius - height;
 	if(Math.abs(off) > 0.1) {
@@ -507,6 +521,18 @@ Terrain.prototype.buildPortals = function() {
 			this.portals[index] = portal;
 		}
 	}
+
+	// calculate the horizontal bounds which will be used to prevent
+	// the camera from moving too close to the borders of the terrain
+	var aabb = new SglBox3;
+	for(var i=0; i<this.portals.length; i++) {
+		aabb.addBox(this.portals[i].getAABB());
+	};
+
+	var c = aabb.center;
+	var s = aabb.size;
+	this.xBounds = [ c[0] - 0.45 * s[0], c[0] + 0.45 * s[0] ];
+	this.zBounds = [ c[2] - 0.45 * s[2], c[2] + 0.45 * s[2] ];
 
 	// debugging code
 	var blockCount = 0;

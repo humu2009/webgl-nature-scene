@@ -119,7 +119,7 @@ Scene.prototype.toggleBoundingBoxes = function() {
 
 Scene.prototype.updateCamera = function(deltaTime) {
 	/*
-		set camera rotations
+		set camera orientation
 	*/
 
 	if(this.app.getButtonDown()) {
@@ -158,6 +158,6 @@ Scene.prototype.updateCamera = function(deltaTime) {
 
 	this.camera.translate(this.speed[0], this.speed[1], this.speed[2]);
 
-	// adjust vertical coordinate of the camera to follow the terrain
+	// adjust the camera to follow the terrain
 	this.terrain.adjustCamera(this.camera, 60);
 };
