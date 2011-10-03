@@ -113,6 +113,18 @@ Scene.prototype.setMirrored = function(isMirrored) {
 	this.isMirrored = isMirrored;
 };
 
+Scene.prototype.getSkyDome = function() {
+	return this.skyDome;
+};
+
+Scene.prototype.getTerrain = function() {
+	return this.terrain;
+};
+
+Scene.prototype.getWater = function() {
+	return this.water;
+};
+
 Scene.prototype.toggleBoundingBoxes = function() {
 	this.terrain.setBoundingBoxesOn(!this.terrain.getBoundingBoxesOn());
 };
