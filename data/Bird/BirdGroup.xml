@@ -1,0 +1,8 @@
+<Group>
+    <Transform>
+      <Scales       x = "0.035" y = "0.035" z = "0.035"/>
+      <Rotations    x = "0.0" y = "0.0" z = "0.0"/>
+      <Translations x = "0.0" y = "0.0" z = "0.0"/>
+    </Transform>
+    <Shape animated = "true" path = "Bird.xml" />
+</Group>

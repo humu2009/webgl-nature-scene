@@ -1,0 +1,96 @@
+<Shaders  fragmentProcessor = "PIXEL_SHADER"
+          vertexProcessor   = "VERTEX_SHADER"
+
+          linkProcessors    = "true">
+
+  <VERTEX_SHADER>
+    <Uniform name = "transformMatrix" type = "float" size = "16" />
+    <Uniform name = "keyframeCount"   type = "int"   size = "1" />
+    <Uniform name = "cycleInterval"   type = "float" size = "1" />
+    <Uniform name = "elapsedTime"     type = "float" size = "1" />
+    <RawData>
+      #define   MAX_KEYFRAMES  5
+
+	  uniform   mat4  transformMatrix;
+	  uniform   int   keyframeCount;
+	  uniform   float cycleInterval;
+	  uniform   float elapsedTime;
+
+	  attribute vec3  position0;
+	  attribute vec3  position1;
+	  attribute vec3  position2;
+	  attribute vec3  position3;
+	  attribute vec3  position4;
+	  attribute vec2  texCoord0;
+
+	  varying   vec2  texCoordOut0;
+
+	  vec3 interpolatePosition()
+	  {
+	    if(keyframeCount > 1)
+		{
+		  float temp;
+
+		  temp                   = elapsedTime / cycleInterval;
+		  float progress         = fract(temp);
+		  float keyframeInterval = 1.0 / float(keyframeCount - 1);  // normalized interval between each keyframe
+		  temp                   = progress / keyframeInterval;
+		  float ikeyframe        = floor(temp);
+		  float interp           = (progress - keyframeInterval * ikeyframe) / keyframeInterval;
+
+		  vec3 p0, p1;
+		  if(1.0 > ikeyframe)
+		  {
+		    p0 = position0;
+			p1 = position1;
+		  }
+		  else if(2.0 > ikeyframe)
+		  {
+		    p0 = position1;
+			p1 = position2;
+		  }
+		  else if(3.0 > ikeyframe)
+		  {
+		    p0 = position2;
+			p1 = position3;
+		  }
+		  else if(4.0 > ikeyframe)
+		  {
+		    p0 = position3;
+			p1 = position4;
+		  }
+
+		  return mix(p0, p1, interp);
+		}
+
+		return position0;
+	  }
+
+      void main(void)
+      {
+		texCoordOut0     = texCoord0;
+        gl_Position      = transformMatrix * vec4(interpolatePosition(), 1.0);
+      }
+    </RawData>
+  </VERTEX_SHADER>
+
+  <PIXEL_SHADER>
+    <Uniform name = "texture"  type =   "int" size = "1" />
+    <RawData>
+      precision highp float;
+
+	  uniform sampler2D texture;
+
+	  varying vec2      texCoordOut0;
+    
+      void main(void)
+      {
+	    vec4 texel      = texture2D(texture, texCoordOut0);
+
+		gl_FragColor    = texel;
+
+      }
+    </RawData>
+  </PIXEL_SHADER>
+  
+</Shaders>
