@@ -29,6 +29,7 @@ Scene = function(app, gl) {
 	this.skyDome = null;
 	this.terrain = null;
 	this.water = null;
+	this.birds = null;
 
 	this.isMirrored = false;
 
@@ -48,6 +49,9 @@ Scene.prototype.onLoad = function(path) {
 	this.water = new Water(this, this.gl);
 	this.water.onLoad(path);
 
+	this.birds = new Birds(this, this.gl);
+	this.birds.onLoad(path);
+
 	// set the initial position and angles of the camera
 	this.camera.translate(139.24, 92.14, -2262.80);
 	this.camera.rotate(0, sglDegToRad(180), 0);
@@ -59,6 +63,7 @@ Scene.prototype.update = function(deltaTime) {
 	this.skyDome.update(deltaTime);
 	this.terrain.update(deltaTime);
 	this.water.update(deltaTime);
+	this.birds.update(deltaTime);
 };
 
 Scene.prototype.render = function() {
@@ -84,6 +89,7 @@ Scene.prototype.render = function() {
 		this.water.beginReflectionRT(this.camera);
 		triangleCount += this.terrain.render(this.camera, this.frustum);
 		triangleCount += this.skyDome.render(this.camera);
+		triangleCount += this.birds.render(this.camera);
 		this.water.endReflectionRT();
 	}
 
@@ -97,6 +103,9 @@ Scene.prototype.render = function() {
 
 	// render the sky dome
 	triangleCount += this.skyDome.render(this.camera);
+
+	// render the birds
+	triangleCount += this.birds.render(this.camera);
 
 	return triangleCount;
 };
@@ -123,6 +132,10 @@ Scene.prototype.getTerrain = function() {
 
 Scene.prototype.getWater = function() {
 	return this.water;
+};
+
+Scene.prototype.getBirds = function() {
+	return this.birds;
 };
 
 Scene.prototype.toggleBoundingBoxes = function() {

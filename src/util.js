@@ -81,6 +81,15 @@ function assignV4(v, x, y, z, w) {
 
 
 
+function distanceV3(u, v) {
+	var dx = u[0] - v[0];
+	var dy = u[1] - v[1];
+	var dz = u[2] - v[2];
+	return Math.sqrt(dx * dx + dy * dy + dz * dz);
+};
+
+
+
 function getImageData(img) {
 	var isCanvasClean = false;
 

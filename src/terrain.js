@@ -77,6 +77,7 @@ Terrain = function(scene, gl) {
 	this.isTextureLoaded = false;
 	this.terrainInfo = new HeightMap;
 	this.portals = null;
+	this.aabb = new SglBox3;
 	this.xBounds = [0, 0];
 	this.zBounds = [0, 0];
 	this.isBBoxesOn = false;
@@ -493,6 +494,10 @@ Terrain.prototype.isReady = function() {
 			this.renderers.terrain && this.renderers.grass;
 };
 
+Terrain.prototype.getAABB = function() {
+	return this.aabb;
+};
+
 Terrain.prototype.getBoundingBoxesOn = function() {
 	return this.isBBoxesOn;
 };
@@ -524,13 +529,12 @@ Terrain.prototype.buildPortals = function() {
 
 	// calculate the horizontal bounds which will be used to prevent
 	// the camera from moving too close to the borders of the terrain
-	var aabb = new SglBox3;
 	for(var i=0; i<this.portals.length; i++) {
-		aabb.addBox(this.portals[i].getAABB());
+		this.aabb.addBox(this.portals[i].getAABB());
 	};
 
-	var c = aabb.center;
-	var s = aabb.size;
+	var c = this.aabb.center;
+	var s = this.aabb.size;
 	this.xBounds = [ c[0] - 0.45 * s[0], c[0] + 0.45 * s[0] ];
 	this.zBounds = [ c[2] - 0.45 * s[2], c[2] + 0.45 * s[2] ];
 
