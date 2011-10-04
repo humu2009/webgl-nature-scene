@@ -396,6 +396,9 @@ Birds.prototype.render = function(camera) {
 		xform.projection.loadIdentity();
 		xform.projection.perspective(sglDegToRad(90), w / h, 25, 10000);
 
+		this.renderer.beginMesh(this.mesh);
+		this.renderer.beginPrimitives('triangles');
+
 		var uniforms = {};
 		for(var i=0; i<this.birdInstances.length; i++) {
 			var bird = this.birdInstances[i];
@@ -406,8 +409,11 @@ Birds.prototype.render = function(camera) {
 			uniforms['cycleInterval'] = bird.getCycleInterval();
 			this.renderer.setUniforms(uniforms);
 
-			this.renderer.renderMeshPrimitives(this.mesh, 'triangles');
+			this.renderer.render();
 		}
+
+		this.renderer.endPrimitives();
+		this.renderer.endMesh();
 
 		this.gl.disable(this.gl.BLEND);
 
