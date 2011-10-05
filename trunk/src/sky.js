@@ -104,7 +104,7 @@ SkyDome.prototype.loadGroup = function(filename) {
 					return;
 				}
 				self.loadShape(shapeElem.getAttribute('path'));
-				info('loaded: ' + url)
+				info('loaded: ' + url);
 			}
 		}
 	};
