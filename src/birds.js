@@ -59,6 +59,7 @@ Birds = function(scene, gl) {
 	this.meshAABB = new SglBox3;
 	this.maxKeyframeCount = 5;
 	this.keyframeCount = 0;
+	this.sound = null;
 	this.triangleCount = 0;
 	this.boids = [];
 	this.birdInstances = [];
@@ -134,7 +135,14 @@ Birds.prototype.loadGroup = function(filename) {
 					return;
 				}
 				self.loadAnimatedShape(shapeElem.getAttribute('path'));
-				info('loaded: ' + url)
+				var soundElem = shapeElem.nextElementSibling;
+				if(!soundElem || soundElem.tagName != 'Sound') {
+					warn('no sound effects defined: ' + url);
+				}
+				else {
+					self.loadAudio(soundElem.getAttribute('path'));
+				}
+				info('loaded: ' + url);
 			}
 		}
 	};
@@ -362,6 +370,21 @@ Birds.prototype.loadAnimatedShape = function(filename) {
 	xhr.send();
 };
 
+/**
+	@private
+*/
+Birds.prototype.loadAudio = function(filename) {
+	this.sound = document.createElement('audio');
+	if(!this.sound) {
+		warn('audio is not supported');
+		return;
+	}
+
+	this.sound.src = this.datapath + filename;
+
+	this.cycleSound();
+};
+
 Birds.prototype.update = function(deltaTime) {
 	this.elapsedTime += deltaTime;
 
@@ -423,6 +446,21 @@ Birds.prototype.render = function(camera) {
 	}
 
 	return 0;
+};
+
+/**
+	@private
+*/
+Birds.prototype.cycleSound = function() {
+	if(!this.sound.error && this.sound.duration) {
+		this.sound.volume = Math.random();
+		this.sound.play();
+	}
+
+	var self = this;
+	setTimeout( function() {
+		self.cycleSound();
+	}, this.sound.duration ? (1100 * (1 + Math.random()) * this.sound.duration) : 5000 );
 };
 
 Birds.prototype.isReady = function() {
