@@ -1,8 +1,9 @@
 <Group>
     <Transform>
-      <Scales       x = "0.035" y = "0.035" z = "0.035"/>
+      <Scales       x = "0.033" y = "0.033" z = "0.033"/>
       <Rotations    x = "0.0" y = "0.0" z = "0.0"/>
       <Translations x = "0.0" y = "0.0" z = "0.0"/>
     </Transform>
     <Shape animated = "true" path = "Bird.xml" />
+    <Sound type = "audio/ogg" codec = "vorbis" duration = '1.1' loop = "false" path = "eagle.oga" />
 </Group>
