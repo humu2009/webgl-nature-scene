@@ -54,7 +54,7 @@
 
 		vec4  dirtAndGrass = weightScale1 * dirtSample + (1.0 - weightScale1) * grassSample;
 		vec4  color        = weightScale2 * dirtAndGrass + (1.0 - weightScale2) * fungusSample;
-		gl_FragColor       = color * dp;
+		gl_FragColor       = vec4(color.xyz * dp + vec3(0.15, 0.15, 0.15), 1.0);
       }
     </RawData>
   </PIXEL_SHADER>

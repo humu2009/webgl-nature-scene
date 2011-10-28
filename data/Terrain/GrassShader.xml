@@ -47,12 +47,14 @@
     <Uniform name = "grass"          type = "int"   size = "1" />
     <Uniform name = "alphaReference" type = "float" size = "1" />
     <Uniform name = "alphaBooster"   type = "float" size = "1" />
+    <Uniform name = "isBlendEnabled" type = "bool"  size = "1" />
     <RawData>
       precision highp float;
 
 	  uniform sampler2D grass;
 	  uniform float     alphaReference;
       uniform float     alphaBooster;
+	  uniform bool      isBlendEnabled;
 
 	  varying vec2      texCoordOut0;
 
@@ -60,12 +62,13 @@
       {
         vec4  grassSample = texture2D(grass, texCoordOut0);
         float newAlpha    = grassSample.a * alphaBooster;
-		// ??
-		if(alphaReference >= newAlpha/*grassSample.a*/)
+
+		if(alphaReference >= newAlpha)
 		{
 		  discard;
 		}
-	    gl_FragColor      = vec4(grassSample.xyz, newAlpha);
+
+	    gl_FragColor      = vec4(grassSample.xyz, isBlendEnabled ? newAlpha : 1.0);
       }
     </RawData>
   </PIXEL_SHADER>
