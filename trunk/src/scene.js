@@ -32,6 +32,7 @@ Scene = function(app, gl) {
 	this.birds = null;
 
 	this.isMirrored = false;
+	this.isTerrainBBoxOn = false;
 
 	this.camera = new SglFirstPersonCamera;
 	this.frustum = new SglFrustum;
@@ -81,28 +82,40 @@ Scene.prototype.render = function() {
 	// setup view frustum for culling
 	this.frustum.setup(xform.projectionMatrixRef, xform.viewMatrixRef, [0, 0, w, h]);
 
-	// check if the water is in view frustum
+	// prepare terrain for rendering
+	this.terrain.prepare(this.camera, this.frustum);
+
+	// check if the water is in view
 	var isWaterVisible = this.water.testVisibility(this.frustum);
 
 	// render the reflection of the scene on the water surface
 	if(isWaterVisible) {
 		this.water.beginReflectionRT(this.camera);
-		triangleCount += this.terrain.render(this.camera, this.frustum);
+		triangleCount += this.terrain.render(this.camera, this.frustum, Terrain.RenderTokens.TERRAIN);
+		triangleCount += this.terrain.render(this.camera, this.frustum, Terrain.RenderTokens.GRASS);
 		triangleCount += this.skyDome.render(this.camera);
 		triangleCount += this.birds.render(this.camera);
 		this.water.endReflectionRT();
 	}
 
-	// render terrian
-	triangleCount += this.terrain.render(this.camera, this.frustum);
+	// render the sky dome
+	triangleCount += this.skyDome.render(this.camera);
+
+	// render the terrian
+	triangleCount += this.terrain.render(this.camera, this.frustum, Terrain.RenderTokens.TERRAIN);
+
+	// render the bounding boxes of the terrain
+	if(this.isTerrainBBoxOn) {
+		triangleCount += this.terrain.render(this.camera, this.frustum, Terrain.RenderTokens.AABB);
+	}
 
 	// render water
 	if(isWaterVisible) {
 		triangleCount += this.water.render(this.camera);
 	}
 
-	// render the sky dome
-	triangleCount += this.skyDome.render(this.camera);
+	// render the grass
+	triangleCount += this.terrain.render(this.camera, this.frustum, Terrain.RenderTokens.GRASS);
 
 	// render the birds
 	triangleCount += this.birds.render(this.camera);
@@ -139,7 +152,7 @@ Scene.prototype.getBirds = function() {
 };
 
 Scene.prototype.toggleBoundingBoxes = function() {
-	this.terrain.setBoundingBoxesOn(!this.terrain.getBoundingBoxesOn());
+	this.isTerrainBBoxOn = !this.isTerrainBBoxOn;
 };
 
 Scene.prototype.updateCamera = function(deltaTime) {

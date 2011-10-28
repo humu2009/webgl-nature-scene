@@ -82,6 +82,13 @@ Terrain = function(scene, gl) {
 	this.zBounds = [0, 0];
 	this.isBBoxesOn = false;
 	this.elapsedTime = 0;
+	this.visiblePortalCount = 0;
+};
+
+Terrain.RenderTokens = {
+	AABB:		1, 
+	GRASS:		2, 
+	TERRAIN:	3
 };
 
 Terrain.prototype.onLoad = function(path) {
@@ -339,32 +346,47 @@ Terrain.prototype.update = function(deltaTime) {
 	this.elapsedTime += deltaTime;
 };
 
-Terrain.prototype.render = function(camera, frustum) {
-	var triangleCount = 0;
+Terrain.prototype.prepare = function(camera, frustum) {
+	this.visiblePortalCount = 0;
 
 	if(this.isReady()) {
-		var xform = this.scene.getApp().getTransformStack();
-
-		var visiblePortalCount = 0;
 		for(var i=0; i<this.portals.length; i++) {
 			if( this.portals[i].testVisibility(frustum) )
-				visiblePortalCount++;
+				this.visiblePortalCount++;
 		}
 
-		if(visiblePortalCount > 0) {
-			// sort portals before rendering
-			this.sortPortals(xform);
+		// sort portals before rendering
+		if(this.visiblePortalCount > 0) {
+			this.sortPortals( this.scene.getApp().getTransformStack() );
+		}
+	}
+};
 
-			// render the base terrain pass
+Terrain.prototype.render = function(camera, frustum, token) {
+	var triangleCount = 0;
+
+	if(this.visiblePortalCount > 0) {
+		var xform = this.scene.getApp().getTransformStack();
+
+		var w = this.scene.getApp().getWidth();
+		var h = this.scene.getApp().getHeight();
+
+		xform.projection.loadIdentity();
+		xform.projection.perspective(sglDegToRad(90), w / h, 10, 12000);
+
+		switch(token)
+		{
+		case Terrain.RenderTokens.TERRAIN:	// render the base terrain pass
 			triangleCount += this.renderTerrainPass(xform);
-
-			// render the vegetation pass
+			break;
+		case Terrain.RenderTokens.GRASS:	// render the vegetation pass
 			triangleCount += this.renderGrassPass(xform);
-
-			// render the bounding boxes of the portals
-			if(this.isBBoxesOn && !this.scene.getMirrored()) {
-				this.renderBoundingBoxes(xform);
-			}
+			break;
+		case Terrain.RenderTokens.AABB:		// render the bounding boxes of the portals
+			this.renderBoundingBoxes(xform);
+			break;
+		default:
+			break;
 		}
 	}
 
@@ -418,7 +440,7 @@ Terrain.prototype.renderTerrainPass = function(xform) {
 	for(var i=0; i<this.portals.length; i++) {
 		var portal = this.portals[i];
 		if(portal.isVisible()) {
-			triangleCount += portal.render(this.renderers.terrain, Portal.RenderTokens.TERRAIN);
+			triangleCount += portal.render(this.renderers.terrain, Terrain.RenderTokens.TERRAIN);
 		}
 	}
 
@@ -432,33 +454,58 @@ Terrain.prototype.renderGrassPass = function(xform) {
 
 	this.renderers.grass.begin();
 
-	////this.gl.enable(this.gl.SAMPLE_ALPHA_TO_COVERAGE);
-	//this.gl.depthMask(this.gl.FALSE);
-	//this.gl.enable(this.gl.BLEND);
 	this.gl.disable(this.gl.CULL_FACE);
-	//this.gl.blendFuncSeparate(this.gl.SRC_ALPHA, this.gl.ONE_MINUS_SRC_ALPHA, this.gl.ONE, this.gl.ONE);
 
-	var uniforms = {};
-	uniforms['transformMatrix'] = xform.viewProjectionMatrix;
-	uniforms['elapsedTime'] = this.elapsedTime;
-	uniforms['alphaReference'] = /*0.25*/0.9;
-	uniforms['alphaBooster'] = 1.5;
-	this.renderers.grass.setUniforms(uniforms);
+	var sharedUniforms = {};
+	sharedUniforms['transformMatrix'] = xform.viewProjectionMatrix;
+	sharedUniforms['elapsedTime'] = this.elapsedTime;
+	this.renderers.grass.setUniforms(sharedUniforms);
 
 	var samplers = {};
 	samplers['grass'] = this.textures.grassPack;
 	this.renderers.grass.setSamplers(samplers);
 
+	/*
+		render the 1st grass pass using alpha testing with a high alpha cut-off value
+	*/
+
+	var uniforms = {};
+	uniforms['alphaReference'] = /*0.25*//*0.9*/0.6;
+	uniforms['alphaBooster'] = 1.5;
+	uniforms['isBlendEnabled'] = false;
+	this.renderers.grass.setUniforms(uniforms);
+
 	for(var i=0; i<this.portals.length; i++) {
 		var portal = this.portals[i];
 		if(portal.isVisible()) {
-			triangleCount += portal.render(this.renderers.grass, Portal.RenderTokens.GRASS);
+			triangleCount += portal.render(this.renderers.grass, Terrain.RenderTokens.GRASS);
 		}
 	}
 
-	//this.gl.depthMask(this.gl.TRUE);
-	//this.gl.disable(this.gl.BLEND);
-	////this.gl.disable(this.gl.SAMPLE_ALPHA_TO_COVERAGE);
+	/*
+		render the 2nd grass pass using alpha blending with a low alpha cut-off value
+	*/
+
+	if(!this.scene.getMirrored()) {
+		this.gl.depthMask(this.gl.FALSE);
+		this.gl.enable(this.gl.BLEND);
+		this.gl.blendFuncSeparate(this.gl.SRC_ALPHA, this.gl.ONE_MINUS_SRC_ALPHA, this.gl.ONE, this.gl.ONE);
+
+		uniforms['alphaReference'] = 0.01;
+		uniforms['alphaBooster'] = 1.0;
+		uniforms['isBlendEnabled'] = true;
+		this.renderers.grass.setUniforms(uniforms);
+
+		for(var i=0; i<this.portals.length; i++) {
+			var portal = this.portals[i];
+			if(portal.isVisible()) {
+				triangleCount += portal.render(this.renderers.grass, Terrain.RenderTokens.GRASS);
+			}
+		}
+
+		this.gl.depthMask(this.gl.TRUE);
+		this.gl.disable(this.gl.BLEND);
+	}
 
 	this.renderers.grass.end();
 
@@ -478,7 +525,7 @@ Terrain.prototype.renderBoundingBoxes = function(xform) {
 		for(var i=0; i<this.portals.length; i++) {
 			var portal = this.portals[i];
 			if(portal.isVisible()) {
-				portal.render(this.renderers.bbox, Portal.RenderTokens.AABB);
+				portal.render(this.renderers.bbox, Terrain.RenderTokens.AABB);
 			}
 		}
 
@@ -496,14 +543,6 @@ Terrain.prototype.isReady = function() {
 
 Terrain.prototype.getAABB = function() {
 	return this.aabb;
-};
-
-Terrain.prototype.getBoundingBoxesOn = function() {
-	return this.isBBoxesOn;
-};
-
-Terrain.prototype.setBoundingBoxesOn = function(isOn) {
-	this.isBBoxesOn = isOn;
 };
 
 /**
