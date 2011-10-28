@@ -33,12 +33,6 @@ Portal = function(gl) {
 	this.zSortValue = 0;
 };
 
-Portal.RenderTokens = {
-	AABB:		1, 
-	GRASS:		2, 
-	TERRAIN:	3
-};
-
 Portal.prototype.setup = function(heightmap, offset, random, coverage) {
 	this.terrainCell.setup(heightmap, offset);
 	this.grassCell.setup(heightmap, offset, random, coverage);
@@ -111,13 +105,13 @@ Portal.prototype.render = function(renderer, token) {
 	var triangleCount = 0;
 
 	switch(token) {
-	case Portal.RenderTokens.TERRAIN:
+	case Terrain.RenderTokens.TERRAIN:
 		triangleCount = this.terrainCell.render(renderer);
 		break;
-	case Portal.RenderTokens.GRASS:
+	case Terrain.RenderTokens.GRASS:
 		triangleCount = this.grassCell.render(renderer);
 		break;
-	case Portal.RenderTokens.AABB:
+	case Terrain.RenderTokens.AABB:
 		renderer.renderMeshPrimitives(this.boundingBox, 'edges');
 		break;
 	default:
