@@ -31,7 +31,7 @@ Water = function(scene, gl) {
 	this.aabb = null;
 	this.triangleCount = 0;
 	this.texture = null;
-	this.surfaceFB = null;
+	this.reflectionFB = null;
 	this.waterMatrix = sglIdentityM4();
 	this.cameraPosition = [0, 0, 0];
 	this.translation = [0, 0, 0];
@@ -46,7 +46,7 @@ Water.prototype.onLoad = function(path) {
 	this.loadShader('WaterShader.xml');
 
 	var fbOpt = { depthAsRenderbuffer: true };
-	this.surfaceFB = new SglFramebuffer(this.gl, 256, 256, [this.gl.RGBA], this.gl.DEPTH_COMPONENT16, null, fbOpt);
+	this.reflectionFB = new SglFramebuffer(this.gl, 256, 256, [this.gl.RGBA], this.gl.DEPTH_COMPONENT16, null, fbOpt);
 };
 
 /**
@@ -373,11 +373,11 @@ Water.prototype.beginReflectionRT = function(camera) {
 				 TerrainConsts.TERRAIN_WIDTH_SCALE * 255, 
 				 TerrainConsts.TERRAIN_DEPTH_SCALE * 255 );
 
-	this.surfaceFB.bind();
+	this.reflectionFB.bind();
 
 	this.scene.setMirrored(true);
 
-	this.gl.viewport(0, 0, this.surfaceFB.width, this.surfaceFB.height);
+	this.gl.viewport(0, 0, this.reflectionFB.width, this.reflectionFB.height);
 	this.gl.clearColor(0, 0, 0, 1);
 	this.gl.clear(this.gl.COLOR_BUFFER_BIT | this.gl.DEPTH_BUFFER_BIT);
 
@@ -395,7 +395,7 @@ Water.prototype.endReflectionRT = function() {
 	this.scene.setMirrored(false);
 
 	// unbind the framebuffer
-	this.surfaceFB.unbind();
+	this.reflectionFB.unbind();
 
 	// restore viewport
 	var w = this.scene.getApp().getWidth();
@@ -429,7 +429,7 @@ Water.prototype.render = function(camera) {
 		this.renderer.setUniforms(uniforms);
 
 		var samplers = {};
-		samplers['reflection'] = this.surfaceFB.colorTargets[0];
+		samplers['reflection'] = this.reflectionFB.colorTargets[0];
 		samplers['normalmap'] = this.texture;
 		this.renderer.setSamplers(samplers);
 

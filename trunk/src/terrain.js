@@ -475,7 +475,7 @@ Terrain.prototype.renderGrassPass = function(xform) {
 	uniforms['isBlendEnabled'] = false;
 	this.renderers.grass.setUniforms(uniforms);
 
-	for(var i=0; i<this.portals.length; i++) {
+	for(var i=this.portals.length-1; i>=0; i--) {
 		var portal = this.portals[i];
 		if(portal.isVisible()) {
 			triangleCount += portal.render(this.renderers.grass, Terrain.RenderTokens.GRASS);
@@ -483,7 +483,7 @@ Terrain.prototype.renderGrassPass = function(xform) {
 	}
 
 	/*
-		render the 2nd grass pass using alpha blending with a low alpha cut-off value
+		render the 2nd grass pass using alpha blending and alpha testing with a low alpha cut-off value
 	*/
 
 	if(!this.scene.getMirrored()) {
