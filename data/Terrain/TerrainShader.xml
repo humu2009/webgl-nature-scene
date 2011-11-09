@@ -24,12 +24,17 @@
   </VERTEX_SHADER>
 
   <PIXEL_SHADER>
-    <Uniform name = "weight" type = "int" size = "1" />
-    <Uniform name = "fungus" type = "int" size = "1" />
-    <Uniform name = "dirt"   type = "int" size = "1" />
-    <Uniform name = "grass"  type = "int" size = "1" />
+    <Uniform name = "dlight"  type = "float" size = "3" />
+	<Uniform name = "ambient" type = "float" size = "3" />
+	<Uniform name = "weight"  type = "int"   size = "1" />
+    <Uniform name = "fungus"  type = "int"   size = "1" />
+    <Uniform name = "dirt"    type = "int"   size = "1" />
+    <Uniform name = "grass"   type = "int"   size = "1" />
    <RawData>  
       precision highp float;
+
+	  uniform   vec3      dlight;
+	  uniform   vec3      ambient;
 
 	  uniform   sampler2D weight;
       uniform   sampler2D fungus;
@@ -50,11 +55,11 @@
 		float weightScale2  = clamp(weightSample.x, 0.0, 1.0);
 
 		vec3  normal       = normalize(normalOut);
-		float dp           = clamp(dot(vec3(0.73, 0.73, 0.0), normal), 0.0, 1.0);
+		float dp           = clamp(dot(dlight, normal), 0.0, 1.0);
 
 		vec4  dirtAndGrass = weightScale1 * dirtSample + (1.0 - weightScale1) * grassSample;
 		vec4  color        = weightScale2 * dirtAndGrass + (1.0 - weightScale2) * fungusSample;
-		gl_FragColor       = vec4(color.xyz * dp + vec3(0.15, 0.15, 0.15), 1.0);
+		gl_FragColor       = vec4(color.xyz * dp + ambient, 1.0);
       }
     </RawData>
   </PIXEL_SHADER>
