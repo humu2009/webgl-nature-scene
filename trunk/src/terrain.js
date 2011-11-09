@@ -75,6 +75,8 @@ Terrain = function(scene, gl) {
 		weight: null
 	};
 	this.isTextureLoaded = false;
+	this.lightDir = [0.73, 0.73, 0.0];
+	this.ambient = [0.15, 0.15, 0.15];
 	this.terrainInfo = new HeightMap;
 	this.portals = null;
 	this.aabb = new SglBox3;
@@ -179,10 +181,6 @@ Terrain.prototype.loadTextures = function(dirtFilename, fungusFilename, grassFil
 
 	opt.wrapT = this.gl.CLAMP_TO_EDGE;
 	this.textures.grassPack = new SglTexture2D(this.gl, this.datapath + grasspackFilename, opt);
-
-	//opt.wrapS = this.gl.CLAMP_TO_EDGE;
-	//opt.wrapT = this.gl.CLAMP_TO_EDGE;
-	//this.textures.weight = new SglTexture2D(this.gl, this.datapath + weightFilename, opt);
 };
 
 Terrain.prototype.loadShader = function(filename, renderers, name) {
@@ -428,6 +426,8 @@ Terrain.prototype.renderTerrainPass = function(xform) {
 
 	var uniforms = {};
 	uniforms['transformMatrix'] = xform.viewProjectionMatrix;
+	uniforms['dlight'] = this.lightDir;
+	uniforms['ambient'] = this.ambient;
 	this.renderers.terrain.setUniforms(uniforms);
 
 	var samplers = {};
@@ -470,7 +470,7 @@ Terrain.prototype.renderGrassPass = function(xform) {
 	*/
 
 	var uniforms = {};
-	uniforms['alphaReference'] = /*0.25*//*0.9*/0.6;
+	uniforms['alphaReference'] = 0.6;
 	uniforms['alphaBooster'] = 1.5;
 	uniforms['isBlendEnabled'] = false;
 	this.renderers.grass.setUniforms(uniforms);
