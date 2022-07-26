@@ -69,56 +69,61 @@ Scene.prototype.update = function(deltaTime) {
 
 Scene.prototype.render = function() {
 	var triangleCount = 0;
+    
+    // terrain must be ready before rendering the first frame
+    if (this.terrain.isReady()) {
 
-	var w = this.app.getWidth();
-	var h = this.app.getHeight();
+        var w = this.app.getWidth();
+        var h = this.app.getHeight();
 
-	var xform = this.app.getTransformStack();
+        var xform = this.app.getTransformStack();
 
-	xform.projection.loadIdentity();
-	xform.projection.perspective(sglDegToRad(90), w / h, 10, 4000);
-	xform.view.load(this.camera.matrix);
+        xform.projection.loadIdentity();
+        xform.projection.perspective(sglDegToRad(90), w / h, 10, 4000);
+        xform.view.load(this.camera.matrix);
 
-	// setup view frustum for culling
-	this.frustum.setup(xform.projectionMatrixRef, xform.viewMatrixRef, [0, 0, w, h]);
+        // setup view frustum for culling
+        this.frustum.setup(xform.projectionMatrixRef, xform.viewMatrixRef, [0, 0, w, h]);
 
-	// prepare terrain for rendering
-	this.terrain.prepare(this.camera, this.frustum);
+        // prepare terrain for rendering
+        this.terrain.prepare(this.camera, this.frustum);
 
-	// check if the water is in view
-	var isWaterVisible = this.water.testVisibility(this.frustum);
+        // check if the water is in view
+        var isWaterVisible = this.water.testVisibility(this.frustum);
 
-	// render the reflection of the scene on the water surface
-	if(isWaterVisible) {
-		this.water.beginReflectionRT(this.camera);
-		triangleCount += this.terrain.render(this.camera, this.frustum, Terrain.RenderTokens.TERRAIN);
-		triangleCount += this.terrain.render(this.camera, this.frustum, Terrain.RenderTokens.GRASS);
-		triangleCount += this.skyDome.render(this.camera);
-		triangleCount += this.birds.render(this.camera);
-		this.water.endReflectionRT();
-	}
+        // render the reflection of the scene on the water surface
+        if(isWaterVisible) {
+            this.water.beginReflectionRT(this.camera);
+            triangleCount += this.terrain.render(this.camera, this.frustum, Terrain.RenderTokens.TERRAIN);
+            triangleCount += this.terrain.render(this.camera, this.frustum, Terrain.RenderTokens.GRASS);
+            triangleCount += this.skyDome.render(this.camera);
+            triangleCount += this.birds.render(this.camera);
+            this.water.endReflectionRT();
+        }
 
-	// render the sky dome
-	triangleCount += this.skyDome.render(this.camera);
+        // render the sky dome
+        triangleCount += this.skyDome.render(this.camera);
 
-	// render the terrian
-	triangleCount += this.terrain.render(this.camera, this.frustum, Terrain.RenderTokens.TERRAIN);
+        // render the terrian
+        triangleCount += this.terrain.render(this.camera, this.frustum, Terrain.RenderTokens.TERRAIN);
 
-	// render the bounding boxes of the terrain
-	if(this.isTerrainBBoxOn) {
-		triangleCount += this.terrain.render(this.camera, this.frustum, Terrain.RenderTokens.AABB);
-	}
+        // render the bounding boxes of the terrain
+        if(this.isTerrainBBoxOn) {
+            triangleCount += this.terrain.render(this.camera, this.frustum, Terrain.RenderTokens.AABB);
+        }
 
-	// render water
-	if(isWaterVisible) {
-		triangleCount += this.water.render(this.camera);
-	}
+        // render water
+        if(isWaterVisible) {
+            triangleCount += this.water.render(this.camera);
+        }
 
-	// render the grass
-	triangleCount += this.terrain.render(this.camera, this.frustum, Terrain.RenderTokens.GRASS);
+        // render the grass
+        triangleCount += this.terrain.render(this.camera, this.frustum, Terrain.RenderTokens.GRASS);
 
-	// render the birds
-	triangleCount += this.birds.render(this.camera);
+        // render the birds
+        triangleCount += this.birds.render(this.camera);
+        
+    }
 
 	return triangleCount;
 };
