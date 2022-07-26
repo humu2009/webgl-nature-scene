@@ -27,7 +27,7 @@ The bird flock simulation is based on _Boids_ algorithm that was introduced by _
 ## Try it
 [![Launch this demo](https://raw.github.com/humu2009/webgl-nature-scene/wiki/screenshots/large00.jpg)](http://humu2009.github.io/webgl-nature-scene/nature.html)
 
-_Controls:_<br>
+_Controls:_
   * Use the arrow keys or **W**, **A**, **S**, **D** to move around.
   * Drag the mouse pointer to change the orientation of the camera.
   * Press **B** to toggle display of the bounding boxes of the terrain tiles.
