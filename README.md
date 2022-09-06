@@ -19,7 +19,7 @@ _Sheep and cattle are easily seen._
   - [x] **Vegetation**: Waving grass with almost countless blades
   - [x] **Waterbody**: Realistic water simulation with reflection and refraction
   - [x] **Environment**: Dynamic cloudy sky dome
-  - [x] **Creature**: Flying birds with flocking behaviour
+  - [x] **Boids**: Flying birds with flocking behaviour
   
 A detailed talk on most of these graphic techniques can be found in _GPU Gems I_ and _II_.<br>
 The bird flock simulation is based on _Boids_ algorithm that was introduced by _Craig Reynolds_.<br>
